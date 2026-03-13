@@ -1,0 +1,67 @@
+---
+description: Git コミットとプッシュの手順（Windows環境での文字化け対策を含む）
+globs: 
+alwaysApply: true
+---
+
+# Git ワークフロー ルール
+
+## コミットメッセージの作成方法（Windows PowerShell 環境）
+
+Windows の PowerShell ではコミットメッセージに日本語を直接指定すると文字化けが発生します。
+以下の手順で一時ファイルを使用してコミットしてください。
+
+### 手順
+
+1. **一時ファイルにコミットメッセージを作成**
+   ```
+   commit_message.tmp
+   ```
+   このファイルにコミットメッセージを記載します（UTF-8で保存）
+
+2. **コミット実行**
+   ```powershell
+   git commit -F commit_message.tmp
+   ```
+   または修正（amend）の場合：
+   ```powershell
+   git commit --amend -F commit_message.tmp
+   ```
+
+3. **一時ファイルの削除**
+   コミット完了後、`commit_message.tmp` を削除してください。
+   ※ このファイルは `.gitignore` に含まれているため、誤ってコミットされることはありません。
+
+### コミットメッセージの書式
+
+```
+<タイプ>: <簡潔な説明>
+
+- 変更点1
+- 変更点2
+- 変更点3
+```
+
+**タイプの例：**
+- `feat`: 新機能
+- `fix`: バグ修正
+- `refactor`: リファクタリング
+- `docs`: ドキュメント
+- `style`: フォーマット変更
+- `test`: テスト
+- `chore`: その他
+
+## 機密情報の取り扱い
+
+以下のファイルは **絶対にコミットしない** でください：
+
+- `.env` / `.env.development` / `.env.production` — APIキーなどの機密情報
+- 認証情報を含むファイル
+
+新規セットアップ時は `.env.example` を参考に `.env.development` を作成してください。
+
+## プッシュ前の確認事項
+
+1. `git status` で意図しないファイルが含まれていないか確認
+2. `.env*` ファイル（.env.example 以外）がコミット対象に含まれていないことを確認
+3. コミットメッセージが文字化けしていないことを `git log` で確認
