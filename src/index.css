@@ -1,0 +1,59 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-slate-950 text-white font-sans antialiased;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  @apply text-white font-bold;
+}
+
+.prose a {
+  @apply text-indigo-400 hover:text-indigo-300 no-underline;
+}
+
+.prose code {
+  @apply bg-slate-800 px-1.5 py-0.5 rounded text-sm text-slate-200;
+}
+
+.prose pre {
+  @apply bg-slate-800/80 rounded-xl;
+}
+
+.prose blockquote {
+  @apply border-indigo-500;
+}
+
+.prose strong {
+  @apply text-white;
+}
+
+.prose li::marker {
+  @apply text-slate-500;
+}
+
+.prose table {
+  @apply border-collapse;
+}
+
+.prose th {
+  @apply bg-slate-800/60 text-slate-200;
+}
+
+.prose td,
+.prose th {
+  @apply border border-slate-700 px-3 py-2;
+}
+
+.speaker-yui {
+  @apply text-pink-400 font-bold;
+}
+
+.speaker-hikari {
+  @apply text-cyan-400 font-bold;
+}

@@ -1,0 +1,110 @@
+---
+description: Vibe News - UIデザインシステム、カラーパレット、コンポーネントパターン
+alwaysApply: true
+---
+
+# UIデザインシステム
+
+## デザインコンセプト
+Podcast/ラジオアプリ風のダークテーマUI。グラデーション背景、ガラスモーフィズム、
+滑らかなアニメーションによるプレミアム感あるインターフェース。
+
+## カラーパレット
+```
+背景:      bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950
+カード:    bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl
+Primary:   indigo-500 / indigo-400 (ボタン、アクセント)
+Success:   emerald-500 / emerald-400 (決定、完了系アクション)
+Accent:    violet-500 / purple-400 (ハイライト、番組制作系)
+Warning:   amber-500 (注意、リセット)
+テキスト:  text-white / text-slate-300 / text-slate-400 / text-slate-500
+リンク:    text-indigo-400 hover:text-indigo-300
+```
+
+## 全体レイアウト
+```
+┌─────────────────────────────────────────────────┐
+│  🎙️ ヘッダー（ロゴ + タイトル + サブタイトル）    │
+├─────────────────────────────────────────────────┤
+│  ステップインジケーター [1]──[2]──[3]──[4]──[5]  │
+├─────────────────────────────────────────────────┤
+│                                                 │
+│   メインコンテンツカード                          │
+│   （各フェーズの内容がここに表示）                  │
+│                                                 │
+├─────────────────────────────────────────────────┤
+│  フッター（クレジット）                            │
+└─────────────────────────────────────────────────┘
+```
+- `min-h-screen` フル画面背景
+- `max-w-5xl mx-auto px-4 py-8` メインコンテンツ幅
+
+## ステップインジケーター
+- 横並びの5ステップ（API設定 → トピック選定 → 調査 → 原稿 → 音声）
+- 各ステップは番号付き丸アイコン + ラベル
+- 現在: `bg-indigo-500 text-white ring-4 ring-indigo-500/30`
+- 完了: `bg-emerald-500 text-white` + チェックマーク
+- 未到達: `bg-slate-700 text-slate-400`
+- ステップ間は線で接続（完了=emerald、未到達=slate-700）
+
+## コンポーネントパターン
+
+### ボタン
+```
+Primary:  px-6 py-3 bg-indigo-500 hover:bg-indigo-400 text-white font-semibold 
+          rounded-xl transition-all duration-200 shadow-lg shadow-indigo-500/25
+          hover:shadow-indigo-500/40 hover:scale-[1.02] active:scale-[0.98]
+Success:  上記と同じ構造で bg-emerald-500 系
+Accent:   上記と同じ構造で bg-violet-500 系
+Disabled: opacity-50 cursor-not-allowed pointer-events-none
+Small:    px-4 py-2 text-sm rounded-lg
+Icon付き: flex items-center gap-2 でアイコン+テキスト
+```
+
+### カード
+```
+メイン:   bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-6 md:p-8
+トピック: bg-gradient-to-r from-indigo-500/10 to-violet-500/10 border-indigo-500/20
+成功:     bg-emerald-500/10 border-emerald-500/20
+```
+
+### ローディング表示
+- 中央配置のスピナー（`animate-spin` + Lucide Loader2 アイコン）
+- パルスドットアニメーション（3つのドットが順に弾む）
+- 処理段階に応じたメッセージ更新（例: 「トピックを検索中...」→「分析中...」）
+
+### Markdown表示エリア
+- `prose prose-invert prose-slate max-w-none` で整形
+- カスタムCSS:
+  - `prose h1,h2,h3`: `text-white font-bold`
+  - `prose a`: `text-indigo-400`
+  - `prose code`: `bg-slate-800 px-1.5 py-0.5 rounded text-sm`
+  - `prose pre`: `bg-slate-800/80 rounded-xl`
+  - `prose blockquote`: `border-indigo-500`
+
+### 音声プレーヤー
+- カスタムUI: 再生/一時停止ボタン + シークバー + 時間表示
+- `bg-gradient-to-r from-indigo-500/20 to-violet-500/20` 背景
+- 波形風の装飾（CSSアニメーション）
+
+## アニメーション
+- フェーズ遷移: `transition-all duration-500 ease-out` フェードイン
+- ボタンホバー: `hover:scale-[1.02] transition-transform duration-150`
+- カード出現: `animate-fadeIn`（カスタム @keyframes: opacity 0→1, translateY 10px→0）
+- ローディング: `animate-spin`, `animate-pulse`, カスタムバウンスドット
+- Tailwind config に追加:
+```javascript
+animation: {
+  'fade-in': 'fadeIn 0.5s ease-out',
+  'slide-up': 'slideUp 0.5s ease-out',
+},
+keyframes: {
+  fadeIn: { '0%': { opacity: '0' }, '100%': { opacity: '1' } },
+  slideUp: { '0%': { opacity: '0', transform: 'translateY(16px)' }, '100%': { opacity: '1', transform: 'translateY(0)' } },
+}
+```
+
+## レスポンシブ
+- モバイル: `px-4 py-6`、ステップインジケーターは横スクロール or 省略表示
+- タブレット以上: `md:px-8 md:py-8`
+- ボタン群: `flex flex-wrap gap-3`

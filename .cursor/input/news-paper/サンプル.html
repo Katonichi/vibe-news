@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>開発ラボ新聞 - 新規サービス開発・AI開発ツール検討会議特集号</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=BIZ+UDPMincho:wght@400;700&family=Noto+Serif+JP:wght@400;700&family=Noto+Sans+JP:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Noto Serif JP', serif;
+            line-height: 1.6;
+            color: #000;
+            background: #f9f9f9;
+            padding: 30px 20px 30px;
+            width: 1200px;
+            margin: 0 auto;
+
+            background-color: #f9f9f6; /* 紙の色を調整 */
+            /* SVGフィルターを変更してノイズの質感を調整 */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 800'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.24'/%3E%3C/svg%3E");
+
+        }
+
+        /* --- ここから追加したヘッダーのスタイル --- */
+        .top-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 4px 0 3px;
+            border-bottom: 1.5px solid #000;
+            font-family: 'Noto Sans JP', sans-serif;
+            white-space: nowrap;
+            line-height: 1;
+        }
+        .top-header-left, .top-header-right {
+            width: 300px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #555;
+            flex-shrink: 0;
+        }
+        .top-header-right {
+            text-align: right;
+        }
+        .top-header-center {
+            font-family: 'Noto Serif JP', serif;
+            font-weight: 900;
+            font-size: 16px;
+            letter-spacing: 0.55em;
+            padding: 0 1.5em;
+            line-height: 1;
+            /* 中央揃えのための微調整 */
+            position: relative;
+            left: 0.175em;
+        }
+        .top-header-left__number {
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 14px;
+            color: #333;
+        }
+        .top-header-left__page {
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            padding-left: 0.1em;
+        }
+        .top-header-left__date {
+            font-size: 11px;
+            color: #555;
+            padding-left: 2em;
+        }
+        .top-header-right__start {
+            font-size: 11px;
+            color: #555;
+        }
+        .top-header-right__number {
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 13px;
+            font-weight: 600;
+            color: #333;
+            padding-left: 0.2em;
+        }
+        .top-header-right__dayly {
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+            padding-left: 0.1em;
+        }
+         /* --- ここまで追加したヘッダーのスタイル --- */
+        
+         .newspaper-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 8px 0;
+        }
+        .newspaper-header__left {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 40px;
+        }
+        
+        .newspaper-title {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 46px;
+            font-weight: 700;
+            letter-spacing: 0px;
+            /* text-shadow: 1px 1px 2px rgba(0,0,0,0.3); */
+            color: #1a1a1a;
+            border: 3px solid #000;
+            padding: 2px;
+        }
+        .newspaper-title .newspaper-title__inner {
+            border: 1px solid #000;
+            line-height: 1;
+            padding: 8px 12px;
+            background-image: repeating-linear-gradient(135deg, #d1d5db 0, #d1d5db 2px, transparent 2px, transparent 5px);
+        }
+        
+        .date-info {
+            font-family: 'BIZ UDMincho', 'Noto Serif JP', serif;
+            text-align: center;
+            font-size: 14px;
+            line-height: 1.15;
+            margin-top: 4px;
+        }
+        .date-info__year {
+            font-size: 14px;
+        }
+        .date-info__date {
+            font-size: 14px;
+        }
+        .date-info__week {
+            font-size: 14px;
+        }
+        .date-info__month,
+        .date-info__day {
+            font-size: 34px;
+        }
+        .date-info__weekday {
+            font-size: 24px;
+        }
+
+        .meeting-info {
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 12px;
+            line-height: 1.1;
+            color: #333;
+            margin: 0;
+            padding: 4px 10px;
+            background-color: #f5f5f5;
+            border: 1px solid #ccc;
+        }
+        
+        .meeting-info-title {
+            display: none;
+
+            font-weight: 700;
+            font-size: 12px;
+            margin-bottom: 6px;
+            text-align: center;
+            padding-bottom: 3px;
+        }
+        
+        .meeting-details {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 4px 8px;
+        }
+        
+        .meeting-label {
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .meeting-value {
+            color: #333;
+        }
+        
+        .publisher-info {
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 11px;
+            line-height: 1.2;
+            color: #666;
+            text-align: right;
+            margin: 2px 4px 0 0;
+        }
+        
+        .publisher-line {
+            margin-bottom: 2px;
+        }
+        
+        .main-container {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 15px;
+            border-top: 1px solid #ccc;
+            padding-top: 15px;
+            border: 1px solid #000;
+            padding: 15px;
+        }
+        
+        .article {
+            border-right: 1px solid #999;
+            padding-right: 12px;
+            padding-bottom: 0px;
+        }
+
+        /* QA記事（質問箱） */
+        .article--qa {
+            column-count: 2;
+            column-gap: 24px;
+            border: 4px solid #AAA !important;
+            padding: 10px 15px 5px !important;
+        }
+        .article--qa .kiji-title {
+            float: left;
+            width: 100%;
+            margin: 11px 0 10px;
+            display: block;
+        }
+        .article--qa .article-content p {
+            text-indent: 0;
+            margin: 0;
+        }
+        .article--qa .speaker {
+            font-weight: bold;
+            color: #000;
+        }
+        
+        .main-story {
+            grid-column: span 4;
+            border-right: 2px solid #000;
+            padding-right: 15px;
+
+            grid-row: 1 / span 2;
+        }
+        
+        .secondary-story {
+            grid-column: span 4;
+            padding-bottom: 5px;
+            padding-right: 0;
+        }
+        
+        .secondary-story .article-content {
+            border-bottom: 1px solid #000;
+            padding-bottom: 6px;
+            column-count: 2;
+            column-gap: 18px;
+        }
+        
+        .tertiary-story {
+            grid-column: span 2;
+            padding-top: 10px;
+        }
+        
+        /* .secondary-story、および、.tertiary-story、.wide-story の中で最後のものだけを選択 */
+        .secondary-story,
+        .column-story,
+        .tertiary-story:not(:has(~ .tertiary-story)),
+        .wide-story:not(:has(~ .wide-story)) {
+            border-right: none;
+        }
+        .tertiary-story:not(:has(~ .tertiary-story)),
+        .wide-story:not(:has(~ .wide-story)) {
+            padding-right: 0;
+        }
+        
+        .small-story {
+            grid-column: span 1;
+        }
+        
+        .wide-story {
+            grid-column: span 4;
+        }
+        
+        .wide-story:not(.column-article) {
+            border-top: 1px solid;
+            padding-top: 15px;
+        }
+        
+        .column-story {
+            grid-column: span 8;
+            column-count: 4;
+            column-gap: 24px;
+            column-rule: 1px solid #999;
+        }
+        .column-headline {
+            font-size: 20px;
+            font-weight: 600;
+            float: left;
+            padding: 0.2em 0.5em;
+            border: 1px solid #000;
+            border-radius: 6px;
+            margin: 10px 16px 4px 10px;
+        }
+        .column-story p {
+            display: inline;
+            margin: 0;
+        }
+        .column-story p {
+            padding-left: 1em;
+            position: relative;
+        }
+        .column-story p:before {
+            font-family: 'Noto Sans JP', sans-serif;
+            position: absolute;
+            left: -1em;
+            top: -0.3em;
+            content: "▶";
+        }
+        .column-story p:first-child {
+            padding-left: 0;
+        }
+        .column-story p:first-child::before {
+            content: "";
+        }
+        
+        .column-story:not(.column-article) {
+            border-top: 1px solid;
+            padding-top: 15px;
+        }
+        
+        .kiji-title {
+            font-weight: 900;
+            margin-bottom: 8px;
+            line-height: 1.2;
+            color: #000;
+        }
+        
+        .main-headline {
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 30px;
+            margin-bottom: 10px;
+            border-bottom: 2px solid #000;
+            background-color: #000;
+            color: #fff;
+            padding: 5px 6px 4px 10px;
+        }
+        
+        .secondary-headline {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .tertiary-headline {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+        
+        .small-headline {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .sub-headline {
+            font-size: 15px;
+            color: #666;
+            font-family: 'Noto Sans JP', sans-serif;
+            margin-bottom: 5px;
+            font-weight: 400;
+        }
+        .main-story > .sub-headline {
+            color: #000;
+            font-weight: bold;
+            font-size: 23px;
+        }
+        .main-story .boxed-article .sub-headline {
+            font-family: 'Noto Serif JP', serif;
+            color: #000;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .secondary-story .sub-headline {
+            font-family: 'Noto Sans JP', sans-serif;
+            color: #FFF;
+            background: black;
+            display: inline-block;
+            padding: 0 10px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .article-content {
+            font-family: 'BIZ UDPMincho', 'Noto Serif JP', serif;
+            font-size: 14px;
+            text-align: justify;
+            line-height: 1.5;
+        }
+        
+        .article-content::after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        
+        .article-content p {
+            margin-bottom: 8px;
+            text-indent: 1em;
+            letter-spacing: -0.4px;
+        }
+        
+        .boxed-article {
+            /* border: 4px solid #CCC; */
+            background-color: #DDD;
+            padding: 10px 13px 4px 15px;
+            margin: 10px 0;
+            background-color: #e0e0e0;
+        }
+        .boxed-article .sub-headline {
+            margin-bottom: 3px;
+        }
+        .boxed-article .article-content {
+            font-size: 13px;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+        .boxed-article .article-content p {
+            font-family: 'Noto Serif JP', serif;
+        }        
+        .column-article {
+            background-color: #fcfcfc;
+            border-left: 8px solid #999;
+            padding: 5px 20px 5px;
+            margin: 0 10px 0 0;
+            border-right: none;
+        }
+        
+        
+        .tech-specs {
+            background-color: #f0f0f0;
+            padding: 8px;
+            margin: 10px 0;
+            font-size: 11px;
+            border-left: 3px solid #666;
+        }
+        
+        .action-items {
+            grid-column: span 8;
+            margin-top: 20px;
+            padding: 0;
+            border: none;
+        }
+        
+        /* 広告風のスタイル */
+        .advertisement {
+            border: 4px solid #000;
+            padding: 20px;
+            margin: 10px;
+            position: relative;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .advertisement::before {
+            content: '';
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            right: 8px;
+            bottom: 8px;
+            border: 1px solid #000;
+            pointer-events: none;
+        }
+        
+        .ad-header {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .ad-catch {
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 24px;
+            font-weight: 900;
+            color: #000;
+            text-decoration: underline;
+            margin-bottom: 5px;
+            letter-spacing: 0.1em;
+        }
+        
+        .ad-subtitle {
+            font-family: 'BIZ UDPMincho', serif;
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .ad-content {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .ad-section {
+            border: 2px solid #666;
+            padding: 15px;
+            background: linear-gradient(135deg, #f9f9f9 0%, #fff 100%);
+            position: relative;
+        }
+        
+        .ad-section h3 {
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 14px;
+            font-weight: 700;
+            background: #000;
+            color: #fff;
+            padding: 5px 10px;
+            margin: -15px -15px 10px -15px;
+            text-align: center;
+        }
+        
+        .ad-section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .ad-section li {
+            padding: 3px 0;
+            font-size: 12px;
+            line-height: 1.4;
+            position: relative;
+            padding-left: 15px;
+        }
+        
+        .ad-section li:before {
+            content: "★";
+            position: absolute;
+            left: 0;
+            color: #000;
+            font-weight: bold;
+        }
+        
+        .ad-footer {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px solid #000;
+        }
+        
+        .ad-company {
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .ad-contact {
+            font-family: 'BIZ UDPMincho', serif;
+            font-size: 12px;
+            color: #333;
+            line-height: 1.3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        .qr-dummy {
+            width: 60px;
+            height: 60px;
+            border: 2px solid #000;
+            background: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        
+        .ad-urgent {
+            background: #ff0000;
+            color: #fff;
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 3px;
+            margin-left: 5px;
+        }
+        
+        .flow-diagram-container {
+            float: right;
+            width: 255px;
+            margin: 4px 2px 8px 20px;
+            text-align: center;
+        }
+        .secondary-story .flow-diagram-container {
+            width: 264px;
+        }
+        
+        .flow-diagram {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+        
+        .flow-diagram-title {
+            font-size: 12px;
+            font-family: 'Noto Sans JP', sans-serif;
+            color: #333;
+            margin-top: 4px;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        /* 文字を囲む円のスタイル */
+        #text-bubble {
+            display: none;
+        }
+        .char-circle {
+            display: inline-flex;  /* 文字を中央に配置するためにflexを使用 */
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;     /* 正円にする */
+            width: 1.6rem;          /* 円の幅 */
+            height: 1.6rem;         /* 円の高さ */
+            margin: 0.1rem;        /* 円の間の余白 */
+            font-size: 0.9em;
+            font-weight: bold;
+            color: white;
+            background-color: #888;
+        }
+
+        /* --- ここから修正箇所 --- */
+        .action-items {
+            grid-column: span 8;
+            border-top: 1px solid #000;
+            margin-top: 0;
+            padding: 15px 0px 0px;
+        }
+        
+        /* 元のスタイルを非表示に */
+        .action-items h2,
+        .action-grid {
+            display: none;
+        }
+        
+        /* 新聞広告エリアのスタイル */
+        .ad-section-title {
+            font-family: 'Noto Sans JP', sans-serif;
+            font-size: 16px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 15px;
+            padding: 5px;
+            border: 1px solid #000;
+            background-color: #e0e0e0;
+        }
+
+        .ad-container {
+            display: grid;
+            grid-template-columns: repeat(8, 1fr);
+            gap: 15px;
+        }
+
+        .ad-item {
+            border: 1.5px solid #000;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            font-family: 'Noto Sans JP', sans-serif;
+        }
+
+        .ad-item--large {
+            grid-column: span 4;
+        }
+        .ad-item--medium {
+            grid-column: span 2;
+        }
+        .ad-item--small {
+            grid-column: span 2;
+            padding: 10px 8px;
+        }
+
+        /* 広告1: 決定事項 */
+        .ad-item--large .ad-catchphrase {
+            font-size: 16px;
+            font-weight: 700;
+            background: #000;
+            color: #fff;
+            padding: 2px 8px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+        .ad-item--large .ad-title {
+            font-family: 'Noto Serif JP', serif;
+            font-size: 22px;
+            font-weight: 900;
+            line-height: 1.3;
+            border-bottom: 2.5px solid #000;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+        }
+        .ad-item--large .ad-title__main {
+            font-size: 26px;
+        }
+        .ad-item--large .ad-title__sub {
+            font-size: 20px;
+        }
+        .ad-item--large .ad-body {
+            font-size: 13px;
+            line-height: 1.7;
+            margin-bottom: auto;
+            text-align: justify;
+            text-indent: 1em;
+            font-family: 'BIZ UDPMincho', serif;
+        }
+        .ad-item--large .ad-body:last-of-type {
+            border-top: 1px solid #999;
+            padding-top: 8px;
+            margin-top: 8px;
+            font-weight: bold;
+        }
+        .ad-item--large .ad-contact {
+            border: 1px dashed #333;
+            padding: 6px;
+            margin-top: 12px;
+            text-align: center;
+        }
+        .ad-item--large .ad-contact-label {
+            font-size: 11px;
+            display: block;
+            color: #333;
+        }
+        .ad-item--large .ad-contact-info {
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* 広告2: アクションアイテム */
+        .ad-item--medium .ad-header {
+            border: 3px double #000;
+            padding: 5px;
+            text-align: center;
+            margin-bottom: 15px;
+            background-color: #e0e0e0;
+        }
+        .ad-item--medium .ad-badge {
+            font-size: 11px;
+            border: 1px solid #000;
+            padding: 1px 4px;
+            display: inline-block;
+            background: #000;
+            color: #fff;
+        }
+        .ad-item--medium .ad-title {
+            font-size: 16px;
+            font-weight: 700;
+            line-height: 1.5;
+            margin-top: 4px;
+        }
+        .ad-item--medium .ad-title__main {
+            font-size: 18px;
+        }
+        .ad-item--medium .ad-title__sub {
+            font-size: 14px;
+        }
+        .ad-item--medium .ad-task-list {
+            list-style: none;
+            padding: 0 0 0 10px;
+            font-size: 13px;
+            margin: 0 0 10px;
+        }
+        .ad-item--medium .ad-task-list li {
+            margin-bottom: 4px;
+        }
+        .ad-item--medium .ad-task-list li span {
+            margin-right: 0.5em;
+        }
+        .ad-item--medium .ad-memo {
+            font-size: 11px;
+            text-align: center;
+            color: #333;
+            margin-bottom: auto; /* 下に配置 */
+        }
+        .ad-item--medium .ad-contact-simple {
+            font-size: 11px;
+            font-weight: bold;
+            text-align: center;
+            margin: 10px auto 0;
+            clear: both; /* float解除 */
+            border-top: 1px solid #ccc;
+            padding-top: 5px;
+            width: 100%;
+        }
+
+        /* 広告3: 技術的検討課題 */
+        .ad-item--small {
+            justify-content: space-between;
+        }
+        .ad-item--small .ad-title-vertical {
+            font-family: 'Noto Serif JP', serif;
+            font-weight: 900;
+            font-size: 20px;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            float: left;
+            border-right: 1.5px solid #000;
+            padding-right: 10px;
+            margin-right: 10px;
+            height: 125px; /* 高さを調整 */
+            letter-spacing: 0.15em;
+        }
+        .ad-item--small .ad-tech-points {
+            list-style: none;
+            padding: 0;
+            font-size: 12px;
+            text-align: left;
+            margin-top: 5px;
+            overflow: hidden; /* float回り込み解除 */
+        }
+        .ad-item--small .ad-tech-points li {
+            margin-bottom: 6px;
+            border-bottom: 1px dotted #666;
+            padding-left: 2px;
+        }
+        .ad-item--small .ad-footer-text {
+            margin-top: 10px;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+            background: #e0e0e0;
+            padding: 4px;
+        }
+        /* --- 修正ここまで --- */
+    </style>
+</head>
+<body>
+    <!-- ここから追加したヘッダーのHTML -->
+    <div class="top-header">
+        <div class="top-header-left">
+            <span class="top-header-left__number">（1）</span>
+            <span class="top-header-left__page">2版</span>
+            <span class="top-header-left__date">令和7年7月15日　第三種郵便物認可</span>
+        </div>
+        <div class="top-header-center">
+            開発日日新聞
+        </div>
+        <div class="top-header-right">
+            <span class="top-header-right__start">（令和7年創刊）</span>
+            <span class="top-header-right__number">第280177号</span>
+            <span class="top-header-right__dayly">（日刊）</span>
+        </div>
+    </div>
+    <!-- ここまで追加したヘッダーのHTML -->
+
+    <header class="newspaper-header">
+        <div class="newspaper-header__left">
+            <div class="newspaper-title"><div class="newspaper-title__inner">開発日日新聞</div></div>
+
+            <div class="date-info">
+                <span class="date-info__year">2025年（令和7年）</span><br>
+                <span class="date-info__date"><span class="date-info__month">9</span>月<span class="date-info__day">9</span>日</span>
+                <span class="date-info__week"><span class="date-info__weekday">火</span>曜日</span>
+            </div>
+        
+            <!-- 会議基本情報 -->
+            <div class="meeting-info">
+                <div class="meeting-info-title">会議概要</div>
+                <div class="meeting-details">
+                    <span class="meeting-label">議題：</span>
+                    <span class="meeting-value">AI開発ツール比較検討、新技術評価、開発効率化手法共有</span>
+                    <span class="meeting-label">参加者：</span>
+                    <span class="meeting-value">村松、功刀、小笠原、浅川、加藤</span>
+                    <span class="meeting-label">場所：</span>
+                    <span class="meeting-value">6-1会議室</span>
+                    <span class="meeting-label">時間：</span>
+                    <span class="meeting-value">16:00～18:30</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="newspaper-header__right">
+            <!-- 発行者情報 -->
+            <div class="publisher-info">
+                <div class="publisher-line">発行：アイデアラボ事務局</div>
+                <div class="publisher-line">〒400-8545 甲府市北口2-6-10</div>
+                <div class="publisher-line">電話055(231)3009</div>
+                <div class="publisher-line">&copy;2025 YNMC</div>
+            </div>
+        </div>
+    </header>
+    
+    <main class="main-container">
+        <!-- トップニュース：KIROツール詳細評価 -->
+        <article class="article main-story">
+            <div class="sub-headline">VS Code拡張に待望のAI開発支援機能搭載！</div>
+            <h1 class="kiji-title main-headline">革命的スペック駆動開発ツールKIRO登場！そこに潜む光と陰の真実</h1>
+            <div class="article-content">
+                <p>VS Code拡張として提供されるKIROツールの実際の利用体験について、9日に開催された検討会議で詳細な報告がなされた。要件定義から設計、実装に至るまでを完全に自動化された開発フローによって実現する革新的ともいえる開発体験をプロジェクト内で共有する一方で、衝撃的な事実も明らかになった。</p>
+                <div class="flow-diagram-container">
+                    <img src="../input/kiro.jpg" alt="KIRO開発フロー図解" class="flow-diagram">
+                    <div class="flow-diagram-title">KIROの開発フローの特徴を表した概念図</div>
+                </div>
+                <p>わずか1～2日という短期間の利用でも100リクエストを消費してしまい、本格的な運用体制に移行した場合には数万円規模の課金が必要となる高コストな仕様であることが明らかとなった。画期的な機能性と革新的な開発手法を備える一方で、開発部門の予算を大きく圧迫する可能性が強く指摘されている。</p>
+                <p>開発チームリーダーは「機能面での革新性は疑う余地がないものの、実際の導入においてはコストパフォーマンスの観点から慎重な検討と判断が必要な段階だ」と述べ、本格導入に向けた重要な課題として指摘した。</p>
+            </div>
+            
+            <div class="boxed-article">
+                
+                <div class="sub-headline"><span id="text-bubble">きょうの言葉</span>「スペック駆動開発」</div>
+                <div class="article-content">
+                    <p>スペック駆動開発（SDD：Spec Driven Development）とは、開発者の直感や経験に頼るのではなく、要件定義から実装までを明確な仕様書（スペック）に基づいて進める開発手法だ。KIROでは、このSDDを自動化し、要件定義→設計→タスク分割→実装の流れを厳密に管理。属人性を排除した標準化された開発プロセスにより、品質向上とプロジェクト管理の効率化を実現している。</p>
+                </div>
+            </div>
+        </article>
+        
+        <!-- 2番目の重要記事：AI開発ツール比較 -->
+        <article class="article secondary-story">
+            <div class="sub-headline">開発現場に革命か？！</div>
+            <h2 class="kiji-title secondary-headline">注目！KIRO vs Cursor 開発ツール頂上決戦</h2>
+            <div class="article-content">
+                <p>AI支援開発ツールの導入検討が本格化している。VS Code拡張として提供されるKIROツールの実証実験では、要件定義から設計、実装まで自動化された信頼性の高い開発フローの効果、コードの品質向上、開発効率の改善などが確認された。</p>
+                <p>一方で、1日2日で100リクエストを消費する高コスト体質が課題として浮上。業界標準のCursorとの比較検討において、スペック駆動開発機能の優位性と料金体系のバランスが焦点となっている。</p>
+                <p>そんな中、「spec-workflow-mcp」や「GitHub Spec Kit」など、CursorでKIRO的なスペック駆動開発を可能にするMCPサーバやツールキットが登場し、KIROの代替手段として期待が高まっている。</p>
+                <div class="flow-diagram-container">
+                    <img src="../input/kirovscursor.png" alt="KIRO vs Cursor 開発フロー図解" class="flow-diagram">
+                    <div class="flow-diagram-title">KIROかCursorか慎重に検討する開発者</div>
+                </div>
+            </div>
+        </article>
+        
+        <!-- 3番目の重要記事：Firebase脱出計画 -->
+        <article class="article secondary-story">
+            <div class="sub-headline">無料の蜜月期間に暗雲！</div>
+            <h2 class="kiji-title secondary-headline">Firebase課金危機でSupabase移行計画検討開始</h2>
+            <div class="article-content">
+                <p>Firebase Studioの課金リスクが現実味を帯びてきた。500円でもアラートが発動する厳戒態勢での運用実態が報告される中、Supabaseへの移行検討が始まった。</p>
+                <p>NoSQLからPostgreSQLへの転換等の技術的課題があるものの、オープンソース界の救世主として注目されるSupabaseの移行支援ドキュメントの充実度が高く評価されている。</p>
+                <p>移行作業は開発環境での検証を経て段階的に実施予定。Firebase特有のリアルタイム機能もSupabaseで代替可能との技術検証が完了し、移行の実現性が確認された。</p>
+            </div>
+        </article>
+        
+        <!-- その他の記事を小サイズで配置 -->
+        <article class="article tertiary-story">
+            <h3 class="kiji-title tertiary-headline">GeoJournal 水面下で始動</h3>
+            <div class="article-content">
+                <p>連歌アプリの技術検証として開発されたGeoJournalアプリがGoogleホスティングでの公開運用を開始。地図メモアプリとして表向きは展開しているが、GPS連動機能やリアルタイム同期技術の実証実験が水面下で進行していることが明らかになった。</p>
+            </div>
+        </article>
+        
+        <article class="article tertiary-story">
+            <h3 class="kiji-title tertiary-headline">Railway デプロイ環境 GitHub連携は夢への滑走路か</h3>
+            <div class="article-content">
+                <p>GitHub連携による自動ビルド・デプロイ環境として活用されているRailway。コミット即本番の自動化を実現し、GUI操作による簡単なバージョン管理の利便性も高く評価された。開発効率の大幅向上に期待が集まる。</p>
+            </div>
+        </article>
+        
+        <article class="article tertiary-story">
+            <h3 class="kiji-title tertiary-headline">ExaBASE導入大作戦</h3>
+            <div class="article-content">
+                <p>機密情報もAI活用可能な社内AI導入を実現するExaBASEの本格検討が開始された。機密情報の自動マスキング機能や利用者統制、アクセス履歴保持など法人向けセキュリティ機能の評価が行われ、安全なAI活用環境の構築に向けた取り組みが加速している。</p>
+            </div>
+        </article>
+        
+        <article class="article tertiary-story">
+            <h3 class="kiji-title tertiary-headline">ローカルLLM 16GBで独立</h3>
+            <div class="article-content">
+                <p>クラウドAIからの独立を目指すローカルLLM「GPT-OSS」の導入可能性について技術評価を実施。16GBメモリでの動作で外部依存を排除できる一方、処理速度とパフォーマンスのトレードオフが課題。ExaBASEとともに自社専用AI実現への検討が進められている。</p>
+            </div>
+        </article>
+        
+        <article class="article wide-story column-article">
+            <div class="sub-headline">【特別コラム】</div>
+            <h3 class="kiji-title tertiary-headline">NotebookLMで議事録革命　音声が魔法の解説動画に変身</h3>
+            <div class="article-content">
+                <p>Googleが提供するNotebookLMを活用した議事録の音声解説化が実業務で大きな効果を上げている。従来のテキスト議事録が音声解説動画に自動変換され、参加者の理解度が飛躍的に向上。特に技術的な内容の説明においては、その効果が顕著だ。</p>
+                <p>マニュアルの自動動画化にも応用が期待され、業務効率化の新たな武器として注目を集めている。音声による情報伝達の可能性を大きく広げる革新的なツールとして評価されている。今後は社内研修や技術共有の場面での活用も検討されている。</p>
+            </div>
+        </article>
+        
+        <article class="article wide-story article--qa">
+            <!-- <div class="sub-headline">AI開発の新時代到来！</div> -->
+            <h3 class="kiji-title tertiary-headline">MCPでCursor無敵進化</h3>
+            <div class="article-content">
+                <!-- <p>AI開発ツールの拡張性を飛躍的に向上させるMCPサーバー技術について議論された。ブラウザ自動操作、データベース連携、スペック駆動開発など多様なMCPサーバーが存在し、USB的プラグイン機能により、CursorやClaude Codeと連携して従来不可能だった自動化が実現できることが判明した。</p>
+                <p>従来の開発環境の限界を突破する新技術として、今後の開発現場に大きな変革をもたらすことが期待されている。</p> -->
+                <p><span class="speaker">生徒</span>　MCPサーバーって何なの？</p>
+                <p><span class="speaker">記者</span>　「Model Context Protocol」の略で、Cursorなどの開発ツールに、様々な専門のAI機能を持ったサーバーをUSBのように接続することで、AIの能力を飛躍的に拡張できる技術です。</p>
+                <p><span class="speaker">生徒</span>　どんないいことがあるの？</p>
+                <p><span class="speaker">記者</span>　従来のAI開発ツールでは不可能だった複雑な作業の自動化が実現できます。たとえば、ブラウザの自動操作や、データベースを更新する機能などがあります。</p>
+                <p><span class="speaker">生徒</span>　導入は難しいの？</p>
+                <p><span class="speaker">記者</span>　既にCursorやClaude Codeを使っている開発者なら、適切なMCPサーバーを見つけて連携設定するだけで、簡単に始められます。</p>
+            </div>
+        </article>
+        
+        <article class="article column-story">
+            <div class="column-headline">天翔龍閃</div>
+            <div class="article-content">
+                <p>会議の冒頭、音声認識システムが一つの興味深い「誤り」を犯した。誰かが発した「要約（ようやく）しちゃだめだよ」という言葉を、AIは「誘惑（ゆうわく）しちゃだめだよ」と聞き間違えたのである。発音の近さゆえのミスであり、高度な翻訳まで行うAIが起こした、人間味あふれるエラーと言える</p>
+                <p>本来は技術的な手順や要件の話だったはずが、一瞬にして、倫理や感情を伴う「誘惑」という言葉に置き換わってしまう。この出来事は、いかに人間が「言葉」を、その場の文脈や空気感、そして経験に基づいて多義的に解釈しているかを浮き彫りにする。そして、その解釈の多様性こそが、人間のコミュニケーションの本質的な特徴なのかもしれない。</p>
+                <p>AIはデータの正確な「文字起こし」や「要約」を目指すが、その過程で、意図せぬ「誘惑」を潜ませてしまう可能性がある。あるいは、人間にはありふれた用語（＝要約）でも、機械には魅力的な言葉（＝誘惑）に聞こえたのかもしれない。技術がどんなに進化しても、言葉が持つ奥深さと、それを扱う人間の心の機微は、常にAIの一歩先を行くのであろう。</p>
+                <span>（水野 航太郎）</span>
+            </div>
+        </article>
+        
+        <!-- ここから修正箇所 -->
+        <footer class="action-items">
+            <!-- 元のh2とdiv.action-gridはCSSで非表示になります -->
+            <h2 style="display: none;">会議決定事項・今後のアクション</h2>
+            <div class="action-grid" style="display: none;"></div>
+
+            <!-- 新しい広告エリア -->
+            <div class="ad-container">
+                <!-- 広告1: 決定事項 -->
+                <div class="ad-item ad-item--large">
+                    <h3 class="ad-catchphrase">【決定事項】未来の標準ツール、導入へ。</h3>
+                    <h4 class="ad-title">
+                        <div class="ad-title__main">AI開発支援「Cursor」</div>
+                        <div class="ad-title__sub">全社展開、本格検討開始！</div>
+                    </h4>
+                    <p class="ad-body">開発効率の飛躍的向上を目指し、有料プランの導入を正式に検討。同時にFirebase課金リスク回避のため、Supabaseへの移行計画も始動します。</p>
+                    <p class="ad-body">生産性向上とコスト最適化を両立させ、持続可能な開発体制の構築を実現しましょう！</p>
+                    <div class="ad-contact">
+                        <span class="ad-contact-label">詳細・ご意見は</span>
+                        <span class="ad-contact-info">▶︎ 担当：開発部 技術革新チーム まで</span>
+                    </div>
+                </div>
+
+                <!-- 広告2: アクションアイテム -->
+                <div class="ad-item ad-item--medium">
+                    <div class="ad-header">
+                        <span class="ad-badge">担当者求む</span>
+                        <h4 class="ad-title">
+                            <div class="ad-title__main">Next Action!</div>
+                            <div class="ad-title__sub">次なる行動が世界を変える！</div>
+                        </h4>
+                    </div>
+                    <ul class="ad-task-list">
+                        <li><span>▶︎</span>AIツール導入提案資料の作成</li>
+                        <li><span>▶︎</span>ExaBASE試験導入の予算確保</li>
+                    </ul>
+                    <p class="ad-memo">※情熱ある方のご連絡をお待ちしております。</p>
+                    <div class="ad-contact-simple">
+                        【問】アイデアラボ事務局 内線: 3009
+                    </div>
+                </div>
+
+                <!-- 広告3: 技術的検討課題 -->
+                <div class="ad-item ad-item--small">
+                    <h4 class="ad-title-vertical">課題の検討メンバー、募集。</h4>
+                    <ul class="ad-tech-points">
+                        <li>コスト削減効果測定</li>
+                        <li>SDD手法の標準化</li>
+                        <li>機密情報AI利用策定</li>
+                    </ul>
+                    <p class="ad-footer-text">開発部 技術戦略課</p>
+                </div>
+            </div>
+        </footer>
+        <!-- 修正ここまで -->
+    </main>
+
+    <script>
+        // DOMの読み込みが完了したときに実行
+        document.addEventListener('DOMContentLoaded', () => {
+            // まる囲み文字スタイル適用
+            initTextBubble();
+        });
+
+        // まる囲み文字スタイル適用
+        function initTextBubble() {
+            // 対象要素をすべて選択
+            const containers = document.querySelectorAll('[id^="text-bubble"]');
+
+            containers.forEach(container => {
+                // 1. 元のテキストを取得し、前後の空白を削除
+                const originalText = container.textContent.trim();
+
+                // 2. テキストを一文字ずつの配列に分解
+                const chars = originalText.split('');
+
+                // 3. 各文字を<span>で囲み、新しいHTMLを生成
+                const newHtml = chars.map(char => {
+                    // 空白かどうかを判定
+                    if (char === ' ' || char === '　') { // 半角・全角スペースに対応
+                        return `<span class="char-circle space"></span>`;
+                    } else {
+                        // 文字をspanで囲む
+                        return `<span class="char-circle">${char}</span>`;
+                    }
+                }).join(''); // 配列を文字列に結合
+
+                // 4. コンテナの中身を生成したHTMLで置き換える
+                container.innerHTML = newHtml;
+
+                // 5. 処理が完了したらコンテナを表示する
+                container.style.display = 'inline-block';
+                 
+            });
+        }
+    </script>
+    
+</body>
+</html>

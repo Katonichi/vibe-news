@@ -1,0 +1,76 @@
+---
+description: Vibe News - プロジェクト全体のアーキテクチャ、技術スタック、ファイル構成
+alwaysApply: true
+---
+
+# Vibe News - プロジェクトアーキテクチャ
+
+## 概要
+AI最新ニュースを深掘り解説するPodcast音声ファイル生成Webアプリケーション。
+ワークフロー: トピック選定 → 調査レポート → 番組原稿 → 音声生成
+
+## 技術スタック
+- **Vite 6**: ビルドツール・開発サーバー
+- **React 18** + **ReactDOM 18**: UIフレームワーク
+- **Tailwind CSS 3** + **@tailwindcss/typography**: スタイリング
+- **Lucide-React**: アイコン
+- **marked**: Markdown→HTML変換
+- **@google/genai**: Gemini API公式SDK
+- **Docker**: ローカル開発環境
+- **Render**: 本番デプロイ（GitHub連携自動デプロイ）
+
+## ファイル構成
+```
+vibe-news/
+├── .cursor/rules/        # Cursor Rules
+├── .env.example          # 環境変数テンプレート（Git管理対象）
+├── .env.development      # 開発環境用（Git管理外）
+├── .env.production       # 本番環境用（Git管理外）
+├── .gitignore
+├── .dockerignore
+├── Dockerfile            # 本番用マルチステージビルド
+├── docker-compose.yml    # ローカル開発用
+├── nginx.conf            # 本番Nginx設定
+├── render.yaml           # Render自動デプロイ設定
+├── package.json
+├── vite.config.js
+├── tailwind.config.js
+├── postcss.config.js
+├── index.html            # Viteエントリーポイント
+├── public/
+│   └── favicon.svg
+└── src/
+    ├── main.jsx          # Reactエントリーポイント
+    ├── App.jsx           # メインAppコンポーネント
+    └── index.css         # Tailwind CSSインポート
+```
+
+## 環境変数（Vite: VITE_ プレフィクス必須）
+- `VITE_APP_MODE` — `development` | `production`
+- `VITE_GEMINI_API_KEY` — Gemini APIキー（開発時のみ設定、本番はUI入力）
+- `VITE_GEMINI_MODEL` — テキスト生成モデル名
+- `VITE_TTS_MODEL` — TTS音声生成モデル名
+
+コード内では `import.meta.env.VITE_*` でアクセス。
+
+## 開発ワークフロー
+```bash
+# Docker起動（初回は npm install 自動実行）
+docker compose up
+
+# ブラウザで http://localhost:5173 を開く
+# ソースコード変更は Hot Reload で即反映
+```
+
+## 本番デプロイ（Render）
+- GitHub push → Render が自動検知 → `npm ci && npm run build` → `dist/` を配信
+- render.yaml で設定済み（Static Site）
+
+## 設計原則
+- React関数コンポーネント + Hooks（useState, useReducer, useCallback, useMemo）
+- コンポーネントは適切にファイル分割（src/ 配下）
+- APIキーは開発時 `.env.development` から自動入力、本番はUI入力
+- `localStorage` でAPIキーを永続化（次回起動時に復元）
+- 全API呼び出しに try/catch エラーハンドリング
+- 全非同期処理にローディング状態とメッセージ表示
+- 日本語UIで統一（ボタンラベル、メッセージ、エラー文全て日本語）

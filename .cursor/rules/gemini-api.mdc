@@ -1,0 +1,170 @@
+---
+description: Vibe News - Gemini API統合パターン（テキスト生成、Google Search grounding、マルチスピーカーTTS、音声処理）
+alwaysApply: true
+---
+
+# Gemini API 統合ガイド
+
+## SDK初期化
+```javascript
+import { GoogleGenAI } from "@google/genai";
+
+// APIキーは localStorage → .env のフォールバック順で取得
+const apiKey = localStorage.getItem('vibe-news-api-key')
+  || import.meta.env.VITE_GEMINI_API_KEY;
+const ai = new GoogleGenAI({ apiKey });
+```
+
+## モデル名は環境変数から取得
+```javascript
+const GEMINI_MODEL = import.meta.env.VITE_GEMINI_MODEL || 'gemini-2.5-flash';
+const TTS_MODEL = import.meta.env.VITE_TTS_MODEL || 'gemini-2.5-flash-preview-tts';
+```
+
+## テキスト生成（トピック選定、原稿生成）
+```javascript
+const response = await ai.models.generateContent({
+  model: GEMINI_MODEL,
+  contents: prompt,
+});
+const text = response.candidates[0].content.parts[0].text;
+```
+
+## Google Search Grounding（トピック探索、レポート作成）
+最新情報をWeb検索で取得しながら回答を生成:
+```javascript
+const response = await ai.models.generateContent({
+  model: GEMINI_MODEL,
+  contents: prompt,
+  config: {
+    tools: [{ googleSearch: {} }],
+  },
+});
+const text = response.candidates[0].content.parts[0].text;
+// response.candidates[0].groundingMetadata に検索結果・引用情報あり
+```
+- Phase 1（トピック探索）とPhase 2（レポート作成）で使用
+- レスポンスの `groundingMetadata` から出典URLを取得可能
+
+## マルチスピーカーTTS（音声生成）
+```javascript
+const response = await ai.models.generateContent({
+  model: TTS_MODEL,
+  contents: ttsFormattedScript, // プレーンテキストの会話原稿
+  config: {
+    responseModalities: ["AUDIO"],
+    speechConfig: {
+      multiSpeakerVoiceConfig: {
+        speakerVoiceConfigs: [
+          {
+            speaker: "ゆい",
+            voiceConfig: {
+              prebuiltVoiceConfig: { voiceName: "Aoede" }  // Breezy - 天真爛漫な声
+            }
+          },
+          {
+            speaker: "ひかり",
+            voiceConfig: {
+              prebuiltVoiceConfig: { voiceName: "Kore" }  // Firm - 知的で落ち着いた声
+            }
+          }
+        ]
+      }
+    }
+  }
+});
+const audioBase64 = response.candidates[0].content.parts[0].inlineData.data;
+```
+
+### TTS用プロンプト形式
+原稿をTTSに渡す前にMarkdown→プレーンテキスト変換:
+```
+TTS the following conversation between ゆい and ひかり. 
+ゆい is cheerful and curious. ひかり is gentle and knowledgeable.
+
+ゆい: こんにちは！今日もVibe Newsの時間だね！
+ひかり: そうね！今日はとっても面白いトピックを持ってきたわよ。
+ゆい: えっ、何なの？すごく気になる！
+...
+```
+
+### 利用可能なボイス（参考）
+- Aoede (Breezy) / Leda (Youthful) / Puck (Upbeat) → ゆい候補
+- Kore (Firm) / Achernar (Soft) / Vindemiatrix (Gentle) → ひかり候補
+
+## ブラウザでの音声処理
+
+### Base64 PCM → WAV Blob 変換
+Gemini TTSのレスポンスは base64エンコードの生PCMデータ（24kHz, 16bit, mono）:
+```javascript
+function pcmToWav(pcmBase64, sampleRate = 24000, numChannels = 1, bitsPerSample = 16) {
+  const pcmBytes = Uint8Array.from(atob(pcmBase64), c => c.charCodeAt(0));
+  const byteRate = sampleRate * numChannels * (bitsPerSample / 8);
+  const blockAlign = numChannels * (bitsPerSample / 8);
+  const wavHeader = new ArrayBuffer(44);
+  const view = new DataView(wavHeader);
+  const writeStr = (off, str) => { for (let i = 0; i < str.length; i++) view.setUint8(off + i, str.charCodeAt(i)); };
+  writeStr(0, 'RIFF');
+  view.setUint32(4, 36 + pcmBytes.length, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);          // chunk size
+  view.setUint16(20, 1, true);           // PCM format
+  view.setUint16(22, numChannels, true);
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, byteRate, true);
+  view.setUint16(32, blockAlign, true);
+  view.setUint16(34, bitsPerSample, true);
+  writeStr(36, 'data');
+  view.setUint32(40, pcmBytes.length, true);
+  return new Blob([wavHeader, pcmBytes], { type: 'audio/wav' });
+}
+```
+
+### 音声再生
+```javascript
+const blob = pcmToWav(audioBase64);
+const audioUrl = URL.createObjectURL(blob);
+// <audio src={audioUrl} controls /> で再生
+// cleanup: URL.revokeObjectURL(audioUrl)
+```
+
+### 長文原稿の分割処理
+Gemini TTSには入力長の制限がある。長い原稿の場合:
+1. 話者の切り替わりポイントで原稿をチャンクに分割（約1000文字単位）
+2. 各チャンクを個別にTTSで音声化
+3. 全チャンクのPCMデータをArrayBufferで結合
+4. 結合した全体のPCMにWAVヘッダーを付与
+
+## エラーハンドリング
+```javascript
+try {
+  const response = await ai.models.generateContent({...});
+  if (!response.candidates?.[0]?.content?.parts?.[0]) {
+    throw new Error('レスポンスが空です。プロンプトを見直してください。');
+  }
+  return response;
+} catch (error) {
+  if (error.status === 429) {
+    // レート制限 → 数秒待ってリトライ
+    await new Promise(r => setTimeout(r, 3000));
+    return retry();
+  }
+  if (error.status === 403 || error.status === 401) {
+    throw new Error('APIキーが無効です。正しいキーを入力してください。');
+  }
+  throw new Error(`API呼び出しに失敗しました: ${error.message}`);
+}
+```
+
+## APIキー検証
+```javascript
+async function validateApiKey(apiKey) {
+  const testAi = new GoogleGenAI({ apiKey });
+  const res = await testAi.models.generateContent({
+    model: GEMINI_MODEL,
+    contents: "Say OK",
+  });
+  return !!res.candidates?.[0]?.content?.parts?.[0]?.text;
+}
+```

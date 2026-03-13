@@ -1,0 +1,119 @@
+---
+description: Vibe News - アプリケーションのワークフロー、状態管理、各フェーズの詳細動作
+alwaysApply: true
+---
+
+# アプリケーション ワークフロー
+
+## フェーズ構成（5段階）
+
+### Phase 0: API設定
+- Gemini APIキー入力フォーム（パスワード型input + 表示トグル）
+- `localStorage.getItem('vibe-news-api-key')` で復元
+- 「接続テスト」ボタンでAPIキー検証（軽量なgenerateContent呼び出し）
+- 成功時に `localStorage` へ保存、Phase 1へ自動遷移
+- Lucide: `Key`, `Eye`, `EyeOff`, `CheckCircle`
+
+### Phase 1: トピック選定（5ソース並列取得）
+- 「🔍 今日のニュースからトピックを探す」ボタン（Lucide: `Search`）
+  → 5つのソースから並列にGemini API（Google Search grounding付き）で各1トピックを取得
+  → 5つのトピックカードを表示: ソースバッジ + タイトル、概要、注目の理由
+- **5つのソース**:
+  1. 一般ニュース（Globe）: 当日の一般的なAI最新ニュースから1つ
+  2. Zenn（BookOpen）: zenn.dev のトレンド記事から1つ
+  3. Qiita（Code2）: qiita.com/tags/ai のAIタグ記事から1つ
+  4. YouTube（Play）: 生成AI・AIエージェント関連の動画から1つ
+  5. TechCrunch（Newspaper）: techcrunch.com/category/artificial-intelligence/ から1つ
+- ソースバッジの色: 一般=indigo, Zenn=blue, Qiita=emerald, YouTube=red, TechCrunch=amber
+- ユーザーが1つを選択（クリックでハイライト）→「✅ このトピックに決定」ボタンで確定
+- 「別の候補を探す」ボタン → 表示済みトピック全てを除外リストに追加して再検索
+  → 過去のタイトルを配列で保持し、プロンプトに除外リストとして渡す
+- **重複除外**: 当日・前日にレポート生成済みのトピックは`localStorage`の履歴から自動除外
+  → `src/topicHistory.js` の `getRecentReportTopics()` で取得
+  → レポート生成成功時に `saveReportTopic()` で保存
+- 一部ソースの取得失敗時は成功したソースのみ表示（`Promise.allSettled`使用）
+- Lucide: `Search`, `CheckCircle`, `RefreshCw`, `Globe`, `BookOpen`, `Code2`, `Play`, `Newspaper`
+
+### Phase 2: 調査レポート生成
+- 確定トピック表示（上部に小さくサマリー）
+- 自動的にレポート生成開始 or 「📋 調査開始」ボタン
+- Gemini API（Google Search grounding付き）で包括的な調査レポートを生成
+- ローディング中: 段階的メッセージ（「情報収集中...」→「分析中...」→「レポート作成中...」）
+- 完成したレポートをMarkdownレンダリングで画面表示
+- アクションボタン群:
+  - 「📥 レポートをダウンロード」→ `report_YYYYMMDD_topic.md`
+  - 「🎬 番組原稿を生成」→ Phase 3へ
+- Lucide: `FileText`, `Download`, `Clapperboard`
+
+### Phase 3: 番組原稿生成
+- **まず台本の長さを選択するUIを表示**:
+  - コンパクト（約3000文字 / 約3分）: 興味深いポイントを厳選して詳しく解説
+  - スタンダード（約6000文字 / 約6分）: 主要なポイントをバランスよく丁寧に解説
+  - ロング（約10000文字 / 約10分）: レポート全体をまんべんなく詳細に深掘り
+- 長さ選択後、レポート内容を入力として会話形式の番組原稿を自動生成
+- キャラクター設定（ゆい・ひかり）と会話ルール + フューショット例をプロンプトに含める
+- ローディング中: 「原稿を執筆中...」
+- 完成した原稿をMarkdownレンダリングで画面表示（話者名を色分け）
+  - ゆい: `text-pink-400` / ひかり: `text-cyan-400`
+- アクションボタン群:
+  - 「📥 原稿をダウンロード」→ `script_YYYYMMDD_topic.md`
+  - 「🎙️ 番組を制作する」→ Phase 4へ
+- Lucide: `ScrollText`, `Download`, `Mic`, `Clock`, `FileText`, `BookOpen`
+
+### Phase 4: 音声生成
+- 原稿テキストをTTS用フォーマットに変換（Markdown装飾除去）
+- Gemini TTS（マルチスピーカーモード）で音声生成
+- ローディング中: 「音声を録音中...」+ 音波風アニメーション
+- 完成した音声をカスタムプレーヤーで表示
+  - 再生/一時停止ボタン
+  - シークバー + 経過時間/総時間
+  - 音量コントロール
+- 「📥 音声をダウンロード」→ `vibe_news_YYYYMMDD.wav`
+- 「🔄 最初からやり直す」→ Phase 1にリセット
+- Lucide: `Play`, `Pause`, `Download`, `Volume2`, `RotateCcw`
+
+## 状態管理（useReducer）
+```javascript
+const initialState = {
+  phase: 0,              // 現在のフェーズ (0-4)
+  apiKey: '',            // Gemini APIキー
+  topics: [],            // 5つのトピック候補 [{ title, summary, reason, source }]
+  currentTopic: null,    // 選択されたトピック { title, summary, reason, source }
+  previousTopics: [],    // 過去提案済みトピックのタイトル配列（除外用）
+  report: '',            // 調査レポート（Markdown文字列）
+  scriptLength: null,    // 台本の長さ (3000 | 6000 | 10000)
+  script: '',            // 番組原稿（Markdown文字列）
+  audioUrl: null,        // 生成音声のObject URL
+  audioBlob: null,       // 生成音声のBlob
+  isLoading: false,      // ローディング中フラグ
+  loadingMessage: '',    // ローディングメッセージ
+  error: null,           // エラーメッセージ
+};
+
+// アクションタイプ
+SET_API_KEY | SET_PHASE | SET_TOPICS | SET_TOPIC | ADD_PREVIOUS_TOPICS |
+SET_REPORT | SET_SCRIPT_LENGTH | SET_SCRIPT | SET_AUDIO | SET_LOADING | SET_ERROR | RESET
+```
+
+## エラーハンドリング
+- API呼び出し失敗: エラーメッセージをカード内に赤背景で表示
+- リトライボタンを表示（直前の操作を再実行）
+- APIキー無効: Phase 0に戻すボタン表示
+- ネットワークエラー: 「接続を確認してください」メッセージ
+
+## ファイルダウンロード共通ユーティリティ
+```javascript
+function downloadFile(content, filename, mimeType = 'text/markdown') {
+  const blob = content instanceof Blob
+    ? content
+    : new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+```

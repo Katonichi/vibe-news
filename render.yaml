@@ -1,0 +1,37 @@
+# Render Blueprint — GitHub連携で自動デプロイ
+# https://docs.render.com/infrastructure-as-code
+
+services:
+  - type: web
+    name: vibe-news
+    runtime: node
+    buildCommand: npm ci && npm run build
+    startCommand: node server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "3000"
+      - key: SAVE_DIR
+        value: /data
+      - key: VITE_APP_MODE
+        value: production
+      - key: VITE_GEMINI_MODEL
+        value: gemini-2.5-flash
+      - key: VITE_TTS_MODEL
+        value: gemini-2.5-flash-preview-tts
+    disk:
+      name: vibe-news-data
+      mountPath: /data
+      sizeGB: 1
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
