@@ -83,7 +83,7 @@ export default function ReportGenerator({ state, dispatch, ActionTypes, onResetA
   };
 
   const handleNext = () => {
-    dispatch({ type: ActionTypes.SET_PHASE, payload: 3 });
+    dispatch({ type: ActionTypes.SET_PHASE, payload: 4 });
   };
 
   return (

@@ -1,4 +1,15 @@
+const initialNewspaper = {
+  allTopics: [],
+  slotAssignment: null,
+  articles: {},
+  columnAuthor: null,
+  generatedHtml: null,
+  savedHtmlPath: null,
+  previousTopics: [],
+};
+
 export const initialState = {
+  mode: null,
   phase: 0,
   apiKey: '',
   topics: [],
@@ -14,10 +25,12 @@ export const initialState = {
   error: null,
   reportTimestamp: null,
   saveDirName: null,
+  newspaper: { ...initialNewspaper },
 };
 
 export const ActionTypes = {
   SET_API_KEY: 'SET_API_KEY',
+  SET_MODE: 'SET_MODE',
   SET_PHASE: 'SET_PHASE',
   SET_TOPICS: 'SET_TOPICS',
   SET_TOPIC: 'SET_TOPIC',
@@ -31,12 +44,23 @@ export const ActionTypes = {
   SET_REPORT_TIMESTAMP: 'SET_REPORT_TIMESTAMP',
   SET_SAVE_DIR_NAME: 'SET_SAVE_DIR_NAME',
   RESET: 'RESET',
+  SET_NP_TOPICS: 'SET_NP_TOPICS',
+  ADD_NP_PREVIOUS_TOPICS: 'ADD_NP_PREVIOUS_TOPICS',
+  SET_NP_SLOT_ASSIGNMENT: 'SET_NP_SLOT_ASSIGNMENT',
+  SET_NP_ARTICLES: 'SET_NP_ARTICLES',
+  SET_NP_COLUMN_AUTHOR: 'SET_NP_COLUMN_AUTHOR',
+  SET_NP_HTML: 'SET_NP_HTML',
+  SET_NP_SAVED_PATH: 'SET_NP_SAVED_PATH',
+  RESET_NEWSPAPER: 'RESET_NEWSPAPER',
 };
 
 export function reducer(state, action) {
   switch (action.type) {
     case ActionTypes.SET_API_KEY:
       return { ...state, apiKey: action.payload };
+
+    case ActionTypes.SET_MODE:
+      return { ...state, mode: action.payload };
 
     case ActionTypes.SET_PHASE:
       return { ...state, phase: action.payload, error: null };
@@ -77,6 +101,9 @@ export function reducer(state, action) {
       };
 
     case ActionTypes.SET_ERROR:
+      if (action.payload === null) {
+        return { ...state, error: null };
+      }
       return { ...state, error: action.payload, isLoading: false, loadingMessage: '' };
 
     case ActionTypes.SET_REPORT_TIMESTAMP:
@@ -90,7 +117,61 @@ export function reducer(state, action) {
         ...initialState,
         apiKey: state.apiKey,
         saveDirName: state.saveDirName,
-        phase: 1,
+        mode: state.mode,
+        phase: 2,
+      };
+
+    case ActionTypes.SET_NP_TOPICS:
+      return {
+        ...state,
+        newspaper: { ...state.newspaper, allTopics: action.payload },
+      };
+
+    case ActionTypes.ADD_NP_PREVIOUS_TOPICS:
+      return {
+        ...state,
+        newspaper: {
+          ...state.newspaper,
+          previousTopics: [...state.newspaper.previousTopics, ...action.payload],
+        },
+      };
+
+    case ActionTypes.SET_NP_SLOT_ASSIGNMENT:
+      return {
+        ...state,
+        newspaper: { ...state.newspaper, slotAssignment: action.payload },
+      };
+
+    case ActionTypes.SET_NP_ARTICLES:
+      return {
+        ...state,
+        newspaper: { ...state.newspaper, articles: action.payload },
+      };
+
+    case ActionTypes.SET_NP_COLUMN_AUTHOR:
+      return {
+        ...state,
+        newspaper: { ...state.newspaper, columnAuthor: action.payload },
+      };
+
+    case ActionTypes.SET_NP_HTML:
+      return {
+        ...state,
+        newspaper: { ...state.newspaper, generatedHtml: action.payload },
+      };
+
+    case ActionTypes.SET_NP_SAVED_PATH:
+      return {
+        ...state,
+        newspaper: { ...state.newspaper, savedHtmlPath: action.payload },
+      };
+
+    case ActionTypes.RESET_NEWSPAPER:
+      return {
+        ...state,
+        newspaper: { ...initialNewspaper },
+        phase: 2,
+        error: null,
       };
 
     default:

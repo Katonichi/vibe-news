@@ -6,7 +6,7 @@ export default function ErrorMessage({ message, onRetry, onResetApiKey }) {
       <div className="flex items-start gap-3">
         <AlertTriangle className="w-5 h-5 text-red-400 mt-0.5 shrink-0" />
         <div className="flex-1 min-w-0">
-          <p className="text-red-300 text-sm leading-relaxed">{message}</p>
+          <p className="text-red-300 text-sm leading-relaxed whitespace-pre-wrap">{message}</p>
           <div className="flex flex-wrap gap-2 mt-3">
             {onRetry && (
               <button

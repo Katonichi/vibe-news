@@ -1,23 +1,35 @@
-import { Check, Key, Search, FileText, ScrollText, Mic } from 'lucide-react';
+import { Check, Key, Search, FileText, ScrollText, Mic, Layers, PenTool, Eye, Newspaper } from 'lucide-react';
 
-const STEPS = [
+const PODCAST_STEPS = [
   { label: 'API設定', icon: Key },
+  { label: 'モード', icon: Layers },
   { label: 'トピック', icon: Search },
   { label: '調査', icon: FileText },
   { label: '原稿', icon: ScrollText },
   { label: '音声', icon: Mic },
 ];
 
-export default function StepIndicator({ currentPhase }) {
+const NEWSPAPER_STEPS = [
+  { label: 'API設定', icon: Key },
+  { label: 'モード', icon: Layers },
+  { label: 'トピック収集', icon: Search },
+  { label: 'スロット割当', icon: Newspaper },
+  { label: '記事生成', icon: PenTool },
+  { label: 'プレビュー', icon: Eye },
+];
+
+export default function StepIndicator({ currentPhase, mode }) {
+  const steps = mode === 'newspaper' ? NEWSPAPER_STEPS : PODCAST_STEPS;
+
   return (
     <div className="flex items-center justify-center gap-0 px-4 pb-8 overflow-x-auto">
-      {STEPS.map((step, i) => {
+      {steps.map((step, i) => {
         const isCompleted = i < currentPhase;
         const isCurrent = i === currentPhase;
         const Icon = isCompleted ? Check : step.icon;
 
         return (
-          <div key={step.label} className="flex items-center">
+          <div key={`${mode}-${step.label}`} className="flex items-center">
             <div className="flex flex-col items-center gap-1.5">
               <div
                 className={`
@@ -41,7 +53,7 @@ export default function StepIndicator({ currentPhase }) {
                 {step.label}
               </span>
             </div>
-            {i < STEPS.length - 1 && (
+            {i < steps.length - 1 && (
               <div
                 className={`w-8 md:w-12 h-0.5 mx-1 mb-5 transition-colors duration-300 ${
                   i < currentPhase ? 'bg-emerald-500' : 'bg-slate-700'

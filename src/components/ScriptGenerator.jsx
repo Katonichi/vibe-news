@@ -101,7 +101,7 @@ export default function ScriptGenerator({ state, dispatch, ActionTypes, onResetA
   };
 
   const handleNext = () => {
-    dispatch({ type: ActionTypes.SET_PHASE, payload: 4 });
+    dispatch({ type: ActionTypes.SET_PHASE, payload: 5 });
   };
 
   const handleSelectLength = (len) => {

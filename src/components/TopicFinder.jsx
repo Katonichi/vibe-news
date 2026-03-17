@@ -57,7 +57,7 @@ export default function TopicFinder({ state, dispatch, ActionTypes, onResetApiKe
   const handleConfirm = () => {
     const titles = topics.map((t) => t.title);
     dispatch({ type: ActionTypes.ADD_PREVIOUS_TOPICS, payload: titles });
-    dispatch({ type: ActionTypes.SET_PHASE, payload: 2 });
+    dispatch({ type: ActionTypes.SET_PHASE, payload: 3 });
   };
 
   const handleResearch = async () => {
